@@ -1,44 +1,68 @@
 # NSFW-remover
-Remove NSFW likes, retweets, and shares from your X account using browser-based scripts.
+
+Remove NSFW likes, retweets, and shares from your X account using Tampermonkey userscripts.
 
 ## Structure
-- `client-side/remove-nsfw-likes.js`: Removes NSFW likes.
-- `client-side/remove-nsfw-retweets.js`: Removes NSFW retweets.
-- `client-side/remove-nsfw-shares.js`: Deletes your NSFW tweets.
+
+-   `userscripts/nsfw-remover-likes.user.js`: Removes NSFW likes.
+-   `userscripts/nsfw-remover-retweets.user.js`: Removes NSFW retweets.
+-   `userscripts/nsfw-remover-shares.user.js`: Deletes your NSFW tweets.
+
+## Setup
+
+1.  Install [Tampermonkey](https://www.tampermonkey.net/) for your browser.
+2.  Open Tampermonkey’s dashboard (icon > "Dashboard").
+3.  Add each script:
+    -   Click "+ New Script."
+    -   Paste the contents of each `.user.js` file.
+    -   Save (Ctrl+S).
 
 ## Usage
-1. Log in to X in your browser.
-2. Navigate to:
-   - Likes: `https://twitter.com/your-username/likes`
-   - Retweets/Shares: `https://twitter.com/your-username`
-3. Open the console (`Ctrl + Shift + J` or right-click > Inspect > Console).
-4. Copy and paste the relevant script:
-   - For likes: `remove-nsfw-likes.js`
-   - For retweets: `remove-nsfw-retweets.js`
-   - For shares (your tweets): `remove-nsfw-shares.js`
-5. Press Enter and let it run. It will scroll and remove NSFW content.
+
+1.  Log in to X.
+2.  Navigate to:
+    -   Likes: `https://twitter.com/your-username/likes`
+    -   Retweets/Shares: `https://twitter.com/your-username`
+3.  The script auto-runs, scanning and removing NSFW content while scrolling.
 
 ## Notes
-- No API or server setup required—runs entirely in your browser.
-- Adjust `maxIterations` or delays (e.g., 2000ms) if X throttles actions.
-- NSFW threshold is set to 0.7; edit the script to change it (0.0–1.0).
-.gitignore (Optional)
-text
 
-Collapse
+-   No API required—uses your browser session.
+-   Delays: 5s per action, 30s per scroll to avoid rate limits.
+-   If "429 Too Many Requests" errors appear in console (from X’s API), wait 15-30 minutes, then refresh and resume.
+-   NSFW threshold is 0.7; edit the script to adjust (0.0–1.0).
+-   Check console (F12 > Console) for progress logs.
 
-Wrap
+## Changes Made
 
-Copy
-*.log
-How to Update Your Project
-Delete Old Files:
-rm -rf server-side/ setup.sh package.json
-Create New Structure:
-mkdir -p client-side
-Save each .js file in client-side/ as shown above.
-Update README.md with the new content.
-Test Each Script:
-Log in to X.
-Open the console on the appropriate page (likes, profile).
-Paste and run each script one at a time.
+-   **Longer Delays:**
+    -   5s (5000ms) between actions (e.g., unliking, unretweeting).
+    -   30s (30000ms) between scroll iterations to give X time to load content without hitting rate limits.
+-   **Retry Logic:**
+    -   If no content is found (e.g., due to rate limiting), it waits 30s and checks again before stopping.
+-   **Better Logging:**
+    -   Logs the number of items found, iteration progress, and errors for debugging.
+-   **Error Handling:**
+    -   Wraps image classification in a try-catch to prevent script crashes.
+
+## Handling the 429 Errors
+
+The 429 errors are from X’s fleets/v1 endpoints, not our script. They suggest the page is requesting avatar or Spaces data too quickly as you scroll. To mitigate:
+
+-   **Run Slower:** The 30s interval should help, but if errors persist, increase to 60s (60000ms in the `setInterval`).
+-   **Pause and Resume:** If you see many 429s, disable the script in Tampermonkey, wait 15-30 minutes, refresh the page, and re-enable it.
+-   **Smaller Batches:** Reduce `maxIterations` to 10 or 20, run it, then repeat as needed.
+
+## How to Test
+
+1.  **Update Tampermonkey:**
+    -   Open Tampermonkey Dashboard.
+    -   Replace each script’s content with the updated versions above.
+    -   Save each one.
+2.  **Run:**
+    -   Go to `https://twitter.com/your-username/likes` for likes.
+    -   Go to `https://twitter.com/your-username` for retweets or shares.
+    -   Open console (F12 > Console) to watch progress.
+3.  **Monitor:**
+    -   Look for logs like “Found X unlike buttons” or “Unliked NSFW post.”
+    -   If it stops prematurely, check for errors and adjust delays.

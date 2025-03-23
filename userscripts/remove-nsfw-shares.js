@@ -1,13 +1,19 @@
+// ==UserScript==
+// @name         NSFW Remover - Shares
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Delete NSFW tweets you’ve shared from your X profile
+// @author       You
+// @match        https://twitter.com/*
+// @match        https://x.com/*
+// @require      https://unpkg.com/@tensorflow/tfjs@latest/dist/tf.min.js
+// @require      https://unpkg.com/nsfwjs@latest/dist/nsfwjs.min.js
+// @grant        none
+// ==/UserScript==
+
 (async function() {
-    const tfScript = document.createElement('script');
-    tfScript.src = 'https://unpkg.com/@tensorflow/tfjs@latest/dist/tf.min.js';
-    document.head.appendChild(tfScript);
+    'use strict';
 
-    const nsfwScript = document.createElement('script');
-    nsfwScript.src = 'https://unpkg.com/nsfwjs@latest/dist/nsfwjs.min.js';
-    document.head.appendChild(nsfwScript);
-
-    await new Promise(resolve => nsfwScript.onload = resolve);
     const model = await nsfwjs.load();
 
     async function removeNSFWShares() {
@@ -15,7 +21,7 @@
         for (let tweet of tweets) {
             const deleteButton = tweet.querySelector('[data-testid="caret"]');
             const img = tweet.querySelector('img[src*="media"]');
-            if (img && deleteButton) { // Ensure it’s your tweet (has delete option)
+            if (img && deleteButton) {
                 const predictions = await model.classify(img);
                 const isNSFW = predictions.some(p => 
                     (p.className === 'Porn' || p.className === 'Hentai' || p.className === 'Sexy') && p.probability > 0.7
@@ -27,7 +33,7 @@
                         if (confirmDelete) confirmDelete.click();
                         console.log('Deleted NSFW share');
                     }, 500);
-                    await new Promise(r => setTimeout(r, 2000));
+                    await new Promise(r => setTimeout(r, 3000));
                 }
             }
         }
@@ -46,5 +52,5 @@
             clearInterval(interval);
             console.log('Finished removing NSFW shares!');
         }
-    }, 15000);
+    }, 20000);
 })();
