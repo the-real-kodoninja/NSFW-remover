@@ -1,0 +1,5 @@
+{
+    "bearerToken": "YOUR_BEARER_TOKEN",
+    "userId": "YOUR_USER_ID",
+    "nsfwThreshold": 0.7
+}
